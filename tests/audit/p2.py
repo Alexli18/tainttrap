@@ -11,8 +11,11 @@ def case(name, fn, mode="soft"):
         print(f"{name:28s}", pre(sid, "mcp__gmail__send_email", SEND))
 # A: deeply nested structured output alongside the injection text
 def A(sid):
-    nested = {"content":[{"type":"text","text":INJ}], "structuredContent": json.loads("["*1200 + "]"*1200)}
-    r = post(sid, "mcp__notes__read", None, raw=json.dumps({"session_id":sid,"cwd":"/repo","tool_name":"mcp__notes__read","tool_use_id":"t0","tool_response":nested}).replace("null", "null"))
+    # The same event as before, built as text: json.loads and json.dumps stop at about 1000 levels on
+    # Python 3.11 (recursion limit), which killed this probe before it reached the hook client.
+    deep = "["*1200 + "]"*1200
+    raw = '{"session_id":%s,"cwd":"/repo","tool_name":"mcp__notes__read","tool_use_id":"t0","tool_response":{"content":[{"type":"text","text":%s}],"structuredContent":%s}}' % (json.dumps(sid), json.dumps(INJ), deep)
+    r = post(sid, "mcp__notes__read", None, raw=raw)
 case("A_nested_1200", A)
 # B: eviction by later ordinary output (~400 KB random text)
 def B(sid):
