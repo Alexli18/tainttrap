@@ -1,0 +1,64 @@
+name: Bug or install problem
+description: TaintTrap won't install, doesn't run, crashes, or reports something wrong.
+title: "[Bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **This issue is public.** Do not paste secrets, private repository names or unredacted home paths.
+        Something dangerous got through? If docs/threat-model.md lists that kind of attack as not covered, use the "Known limitation" form; otherwise report it privately as described in SECURITY.md.
+  - type: dropdown
+    id: impact
+    attributes:
+      label: What is the impact?
+      options:
+        - TaintTrap will not install
+        - The hook or proxy does not run
+        - The daemon crashes or hangs
+        - "`tainttrap doctor` reports a problem I can't fix"
+        - Approvals don't work
+        - It slows my agent down noticeably
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened?
+      placeholder: I expected ..., but ...
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `tainttrap doctor`
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: TaintTrap version
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS and Python version
+      placeholder: macOS 15.5, Python 3.12
+    validations:
+      required: true
+  - type: dropdown
+    id: integration
+    attributes:
+      label: Integration
+      options:
+        - Claude Code hook
+        - MCP proxy
+        - Both
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: Agent and its version
+      placeholder: Claude Code 2.x

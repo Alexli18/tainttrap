@@ -1,0 +1,97 @@
+# CI for every push to main and every pull request.
+# Actions are pinned to full commit SHAs (version in the comment); Dependabot
+# keeps the pins current. Pattern taken from ECC's workflows.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        # requires-python = ">=3.11" in pyproject.toml
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install
+        # `dev` is an optional extra, not a dependency group. `cpu` and `gpu` conflict
+        # (pyproject [tool.uv] conflicts), so --all-extras would fail; tests need neither.
+        run: uv sync --locked --extra dev --extra data
+
+      - name: Lint
+        run: |
+          uv run ruff check src tests eval scripts
+          uv run ruff format --check src tests eval scripts
+
+      - name: Types
+        # Target and strictness come from [tool.mypy] in pyproject.toml (strict on tainttrap.core).
+        run: uv run mypy
+
+      - name: Tests
+        # All test directories, adversarial included, and the detection benchmark regression
+        # test. Excluded: tests needing an ONNX model or a running Ollama, and timing-sensitive
+        # `slow` tests. Approval dialogs are faked in tests, so no display is needed.
+        run: uv run pytest -m "not model and not slow and not ollama and not audit"
+
+      - name: Fail-open audit probes
+        # Its own step: if the `audit` marker ever selects nothing, pytest exits 5 and the
+        # step fails instead of the probes silently not running.
+        run: uv run pytest -m audit
+
+      - name: Hook client imports only the standard library
+        run: uv run python scripts/check_hook_imports.py
+
+  secret-scan:
+    name: Secret scan (files and history)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: "8.30.1"
+      GITLEAKS_SHA256: "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install gitleaks (checksum-verified)
+        run: |
+          set -euo pipefail
+          url="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" "$url"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP" gitleaks
+
+      - name: Scan working tree
+        run: |
+          "$RUNNER_TEMP/gitleaks" dir --redact --config .gitleaks.toml .
+
+      - name: Scan history
+        run: |
+          "$RUNNER_TEMP/gitleaks" git --redact --config .gitleaks.toml .

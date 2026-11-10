@@ -1,0 +1,21 @@
+name: Idea or integration
+description: A new integration, a new kind of check, or a change to how TaintTrap works.
+title: "[Idea] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation, not only the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What do you propose?
+  - type: textarea
+    id: false-positives
+    attributes:
+      label: What normal work could this get in the way of?
+      description: Every new check has a cost in questions. Examples help.

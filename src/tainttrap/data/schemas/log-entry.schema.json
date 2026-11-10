@@ -1,0 +1,344 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://raw.githubusercontent.com/Alexli18/tainttrap/main/src/tainttrap/data/schemas/log-entry.schema.json",
+ "title": "TaintTrap decision log entry (one JSONL line)",
+ "description": "FR-027. Every string has passed the secret masker twice (at dossier build and at write). Files: $TAINTTRAP_HOME/logs/decisions-YYYY-MM-DD.jsonl.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "schema_version",
+  "ts",
+  "entry_id",
+  "kind",
+  "session_id",
+  "mode",
+  "policy_hash"
+ ],
+ "$defs": {
+  "outcome": {
+   "enum": [
+    "allow",
+    "ask",
+    "block"
+   ]
+  },
+  "assessment": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "aligned",
+    "risk",
+    "sensitive_data",
+    "needs_human",
+    "model_id",
+    "latency_ms"
+   ],
+   "properties": {
+    "aligned": {
+     "type": "number"
+    },
+    "risk": {
+     "type": "string"
+    },
+    "risk_probs": {
+     "type": "object",
+     "additionalProperties": {
+      "type": "number"
+     }
+    },
+    "sensitive_data": {
+     "type": "number"
+    },
+    "needs_human": {
+     "type": "number"
+    },
+    "model_id": {
+     "type": "string"
+    },
+    "latency_ms": {
+     "type": "number"
+    },
+    "rationale": {
+     "type": [
+      "string",
+      "null"
+     ]
+    }
+   }
+  }
+ },
+ "properties": {
+  "schema_version": {
+   "const": 1
+  },
+  "ts": {
+   "type": "string",
+   "format": "date-time"
+  },
+  "entry_id": {
+   "type": "string",
+   "description": "ULID"
+  },
+  "kind": {
+   "enum": [
+    "decision",
+    "failure_mode",
+    "daemon_started",
+    "daemon_stopped",
+    "policy_reloaded",
+    "policy_reload_refused",
+    "hooks_missing",
+    "flag",
+    "heartbeat",
+    "approval",
+    "config_changed",
+    "provenance_degraded"
+   ]
+  },
+  "session_id": {
+   "type": "string"
+  },
+  "adapter": {
+   "enum": [
+    "claude_code_hook",
+    "mcp_proxy",
+    "sdk"
+   ]
+  },
+  "mode": {
+   "enum": [
+    "observe",
+    "soft",
+    "strict"
+   ]
+  },
+  "policy_hash": {
+   "type": "string"
+  },
+  "model_version": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "device_tier": {
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "call": {
+   "type": "object",
+   "properties": {
+    "call_id": {
+     "type": "string"
+    },
+    "tool_name": {
+     "type": "string"
+    },
+    "server": {
+     "type": [
+      "string",
+      "null"
+     ]
+    }
+   }
+  },
+  "dossier": {
+   "$ref": "dossier.schema.json"
+  },
+  "provenance": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "path": {
+      "type": "string"
+     },
+     "origin": {
+      "enum": [
+       "user",
+       "untrusted",
+       "derived",
+       "literal"
+      ]
+     },
+     "match_kind": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "match_len": {
+      "type": "integer"
+     }
+    }
+   }
+  },
+  "rule_results": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "rule_id": {
+      "type": "string"
+     },
+     "verdict": {
+      "enum": [
+       "allow",
+       "ask",
+       "block",
+       "none"
+      ]
+     },
+     "final": {
+      "type": "boolean"
+     },
+     "severity": {
+      "enum": [
+       "info",
+       "warn",
+       "critical"
+      ]
+     },
+     "evidence": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "assessment": {
+   "$ref": "#/$defs/assessment"
+  },
+  "judge_assessment": {
+   "$ref": "#/$defs/assessment"
+  },
+  "human": {
+   "type": "object",
+   "properties": {
+    "answer": {
+     "enum": [
+      "approved",
+      "denied",
+      "timed_out",
+      "approve",
+      "deny",
+      "decline",
+      "cancel"
+     ]
+    },
+    "latency_s": {
+     "type": "number"
+    },
+    "channel": {
+     "enum": [
+      "claude_code_prompt",
+      "elicitation",
+      "approvals_cli"
+     ]
+    }
+   }
+  },
+  "decision": {
+   "type": "object",
+   "required": [
+    "outcome",
+    "enforced",
+    "effective_outcome",
+    "decided_by",
+    "reason"
+   ],
+   "properties": {
+    "outcome": {
+     "$ref": "#/$defs/outcome"
+    },
+    "enforced": {
+     "type": "boolean"
+    },
+    "effective_outcome": {
+     "$ref": "#/$defs/outcome"
+    },
+    "decided_by": {
+     "enum": [
+      "rules",
+      "model",
+      "judge",
+      "human",
+      "failure_mode",
+      "policy_default"
+     ]
+    },
+    "reason": {
+     "type": "string",
+     "maxLength": 300
+    },
+    "reason_codes": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "latency_ms": {
+     "type": "number"
+    },
+    "dedup_of": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "hint": {
+     "type": "string",
+     "maxLength": 700
+    }
+   }
+  },
+  "shadow": {
+   "type": "object",
+   "properties": {
+    "model_version": {
+     "type": "string"
+    },
+    "outcome": {
+     "$ref": "#/$defs/outcome"
+    },
+    "assessment": {
+     "$ref": "#/$defs/assessment"
+    }
+   }
+  },
+  "detail": {
+   "type": "string"
+  },
+  "entry_ref": {
+   "type": [
+    "string",
+    "null"
+   ],
+   "description": "decision entry this approval answers"
+  },
+  "approval_id": {
+   "type": "string"
+  },
+  "escalations": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "properties": {
+     "to": {
+      "enum": [
+       "judge",
+       "human"
+      ]
+     },
+     "result": {
+      "type": "string"
+     },
+     "latency_ms": {
+      "type": "number"
+     }
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,62 @@
+# Trusted entries for popular MCP servers (T073). Descriptions are ours, never the server's.
+# `server` is the name the user gives the server in their client config (e.g. "github").
+tools:
+  # filesystem
+  - {server: filesystem, name: "read_*", risk_class: read_only, description: "Reads files or directories."}
+  - {server: filesystem, name: "list_*", risk_class: read_only, description: "Lists directories or allowed roots."}
+  - {server: filesystem, name: "search_*", risk_class: read_only, description: "Searches files by name."}
+  - {server: filesystem, name: get_file_info, risk_class: read_only, description: "Returns file metadata."}
+  - {server: filesystem, name: "*", risk_class: write_internal, description: "Writes, edits or moves local files."}
+  # git
+  - {server: git, name: "git_status", risk_class: read_only, description: "Shows working tree status."}
+  - {server: git, name: "git_diff*", risk_class: read_only, description: "Shows changes."}
+  - {server: git, name: "git_log", risk_class: read_only, description: "Shows history."}
+  - {server: git, name: "git_show", risk_class: read_only, description: "Shows a commit."}
+  - {server: git, name: "git_reset", risk_class: destructive, description: "Resets the working tree or index."}
+  - {server: git, name: "*", risk_class: write_internal, description: "Changes the local repository."}
+  # GitHub / GitLab
+  - {server: github, name: "get_*", risk_class: read_only, description: "Reads GitHub data."}
+  - {server: github, name: "list_*", risk_class: read_only, description: "Lists GitHub objects."}
+  - {server: github, name: "search_*", risk_class: read_only, description: "Searches GitHub."}
+  - {server: github, name: delete_file, risk_class: destructive, description: "Deletes a file in a GitHub repository."}
+  - {server: github, name: merge_pull_request, risk_class: destructive, description: "Merges a pull request."}
+  - {server: github, name: "*", risk_class: external_communication, description: "Creates or changes content on GitHub (issues, PRs, comments, files)."}
+  - {server: gitlab, name: "get_*", risk_class: read_only, description: "Reads GitLab data."}
+  - {server: gitlab, name: "list_*", risk_class: read_only, description: "Lists GitLab objects."}
+  - {server: gitlab, name: "*", risk_class: external_communication, description: "Creates or changes content on GitLab."}
+  # chat and mail
+  - {server: slack, name: "slack_get_*", risk_class: read_only, description: "Reads Slack channels, users or history."}
+  - {server: slack, name: "slack_list_*", risk_class: read_only, description: "Lists Slack channels or users."}
+  - {server: slack, name: "*", risk_class: external_communication, description: "Posts or reacts in Slack."}
+  - {server: gmail, name: "search_*", risk_class: read_only, description: "Searches mail."}
+  - {server: gmail, name: "read_*", risk_class: read_only, description: "Reads mail."}
+  - {server: gmail, name: "get_*", risk_class: read_only, description: "Reads mail or threads."}
+  - {server: gmail, name: "delete_*", risk_class: destructive, description: "Deletes mail."}
+  - {server: gmail, name: "*", risk_class: external_communication, description: "Sends or drafts mail."}
+  - {server: google-calendar, name: "list_*", risk_class: read_only, description: "Lists calendar events."}
+  - {server: google-calendar, name: "get_*", risk_class: read_only, description: "Reads calendar events."}
+  - {server: google-calendar, name: "*", risk_class: external_communication, description: "Creates or changes events and invitations."}
+  # databases
+  - {server: postgres, name: query, risk_class: read_only, description: "Runs a read-only SQL query."}
+  - {server: sqlite, name: read_query, risk_class: read_only, description: "Runs a SELECT query."}
+  - {server: sqlite, name: list_tables, risk_class: read_only, description: "Lists tables."}
+  - {server: sqlite, name: describe_table, risk_class: read_only, description: "Describes a table."}
+  - {server: sqlite, name: "*", risk_class: write_internal, description: "Writes to the database or creates tables."}
+  # web
+  - {server: fetch, name: fetch, risk_class: read_only, description: "Downloads a URL (GET)."}
+  - {server: puppeteer, name: "*", risk_class: external_communication, description: "Drives a browser that can submit forms."}
+  - {server: playwright, name: "browser_snapshot", risk_class: read_only, description: "Reads the current page."}
+  - {server: playwright, name: "browser_navigate", risk_class: read_only, description: "Opens a URL."}
+  - {server: playwright, name: "*", risk_class: external_communication, description: "Clicks, types or submits in a browser."}
+  # money and business systems
+  - {server: stripe, name: "list_*", risk_class: read_only, description: "Lists Stripe objects."}
+  - {server: stripe, name: "retrieve_*", risk_class: read_only, description: "Reads a Stripe object."}
+  - {server: stripe, name: "*", risk_class: financial, description: "Creates payments, refunds, invoices or customers."}
+  - {server: paypal, name: "list_*", risk_class: read_only, description: "Lists PayPal objects."}
+  - {server: paypal, name: "*", risk_class: financial, description: "Creates or changes payments and invoices."}
+  - {server: salesforce, name: "*query*", risk_class: read_only, description: "Queries Salesforce records."}
+  - {server: salesforce, name: "*", risk_class: write_internal, description: "Creates or updates Salesforce records."}
+  - {server: notion, name: "*search*", risk_class: read_only, description: "Searches Notion."}
+  - {server: notion, name: "*", risk_class: write_internal, description: "Creates or updates Notion pages."}
+  - {server: linear, name: "*", risk_class: write_internal, description: "Creates or updates Linear issues."}
+  - {server: jira, name: "*", risk_class: write_internal, description: "Creates or updates Jira issues."}

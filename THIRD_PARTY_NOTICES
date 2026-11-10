@@ -1,0 +1,59 @@
+TaintTrap includes data and contributor tooling derived from the following third-party projects.
+
+== gitleaks (https://github.com/gitleaks/gitleaks) ==
+License: MIT. Secret-detection regexes, keywords and entropy thresholds.
+
+== Betterleaks (https://github.com/betterleaks/betterleaks) ==
+License: MIT. Additional cloud-credential secret-detection rules.
+
+== Public Suffix List (https://publicsuffix.org) ==
+License: MPL-2.0. Public suffixes, used to find the registrable domain of a host.
+Commit 3929462652695bad04f0a27afb600974014a3c8b
+
+== ECC (https://github.com/affaan-m/ECC) ==
+License: MIT. Contributor tooling adapted from ECC:
+- `.claude/skills/oss-release-audit/` (from the `opensource-pipeline` skill and the `opensource-sanitizer` agent; `scripts/unreadable-files.sh` keeps the original scan logic)
+- `.claude/agents/release-sanitizer.md` (from `opensource-sanitizer`)
+- `.claude/skills/security-self-audit/` (from `agent-security-hardening`)
+- `.claude/agents/fail-open-hunter.md` (from `silent-failure-hunter`)
+- `.claude/agents/rule-change-reviewer.md` (from `pr-test-analyzer`)
+- `.claude/skills/decision-records/` (from `architecture-decision-records`)
+- `.claude/skills/issue-triage/` (from `github-ops`)
+- the structure of `SECURITY.md`, the issue forms, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/dependabot.yml` and `.github/release.yml`, and the workflow conventions in `.github/workflows/` (SHA-pinned actions, minimal permissions, no persisted credentials)
+
+MIT License
+
+Copyright (c) 2026 Affaan Mustafa
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+== NVIDIA SWE-Hero and Nemotron-SWE trajectories ==
+License: CC BY 4.0. Benign coding-agent tool calls used for evaluation and as benign training
+records (the data itself is not in this repository; see datasets.lock):
+- nvidia/SWE-Hero-openhands-trajectories, revision 150bc119e52c647216fce285fd801f16b6fd745b,
+  NVIDIA. Ludwig, Ahmad, Majumdar, Ginsburg, "From SWE-ZERO to SWE-HERO: Execution-free to
+  Execution-based Fine-tuning for Software Engineering Agents", arXiv 2604.01496 (2026).
+- nvidia/Nemotron-SWE-v1, revision 0fe17a965b297a9c943a59050a14c42d5f0083ce, NVIDIA (some
+  subsets BSD-3-Clause).
+Trajectories quote code from their source repositories, whose licenses are listed per record.
+Changes: tool calls mapped to Claude Code tool names and replayed through TaintTrap.
+
+== Vendored commits ==
+gitleaks b58d3f102cf3a2c84cb7f923d05c25c9b1aed84b
+betterleaks 43f0ee932d05ef2bd79b2e530994b9c9851127bc

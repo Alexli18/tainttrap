@@ -1,0 +1,152 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://raw.githubusercontent.com/Alexli18/tainttrap/main/src/tainttrap/data/schemas/training-record.schema.json",
+ "title": "TaintTrap training/eval record (one JSONL line)",
+ "description": "Dossier + labels in the Laya typed-decision format (labels plus probabilities; soft labels allowed). All questions are 'choice' type (research R-03). Also the format of `tainttrap dataset export`.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "id",
+  "state",
+  "questions",
+  "meta"
+ ],
+ "properties": {
+  "id": {
+   "type": "string"
+  },
+  "state": {
+   "$ref": "dossier.schema.json"
+  },
+  "questions": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "aligned",
+    "risk",
+    "sensitive_data",
+    "needs_human"
+   ],
+   "properties": {
+    "aligned": {
+     "$ref": "#/$defs/choice",
+     "description": "options: matches_task | does_not_match | unclear"
+    },
+    "risk": {
+     "$ref": "#/$defs/choice",
+     "description": "options: the six risk classes"
+    },
+    "sensitive_data": {
+     "$ref": "#/$defs/choice",
+     "description": "options: yes | no"
+    },
+    "needs_human": {
+     "$ref": "#/$defs/choice",
+     "description": "options: yes | no"
+    }
+   }
+  },
+  "expected_outcome": {
+   "enum": [
+    "allow",
+    "ask",
+    "block"
+   ]
+  },
+  "meta": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "source",
+    "class",
+    "tool_family",
+    "task_template",
+    "split"
+   ],
+   "properties": {
+    "source": {
+     "type": "string",
+     "description": "synthetic | dtap | asb | toolsafety | flags | own_traces | <benchmark>"
+    },
+    "source_version": {
+     "type": "string"
+    },
+    "license": {
+     "type": "string"
+    },
+    "class": {
+     "enum": [
+      "normal",
+      "hard_normal",
+      "exfiltration",
+      "unauthorized_external",
+      "destructive",
+      "money_permissions"
+     ]
+    },
+    "tool_family": {
+     "type": "string"
+    },
+    "task_template": {
+     "type": "string"
+    },
+    "split": {
+     "enum": [
+      "train",
+      "validation",
+      "test",
+      "eval_only"
+     ]
+    },
+    "attack_success_condition": {
+     "type": "string"
+    },
+    "reviewed_by": {
+     "type": "array",
+     "items": {
+      "enum": [
+       "human",
+       "codex",
+       "claude"
+      ]
+     }
+    },
+    "generator": {
+     "type": "string",
+     "description": "For synthetic records: generator, prompt and template ids. Must not reuse a held-out template (eval/holdout.py)."
+    }
+   }
+  }
+ },
+ "$defs": {
+  "choice": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "options",
+    "label"
+   ],
+   "properties": {
+    "options": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "minItems": 2
+    },
+    "label": {
+     "type": "string"
+    },
+    "probabilities": {
+     "type": "array",
+     "items": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+     },
+     "description": "soft label, same order as options, sums to 1"
+    }
+   }
+  }
+ }
+}

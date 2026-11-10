@@ -1,0 +1,33 @@
+name: Known limitation (new example)
+description: A new example of an attack that docs/threat-model.md lists as not covered.
+title: "[Known limitation] "
+labels: ["known-limitation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form only for attacks that `docs/threat-model.md` already lists as not covered. New examples help show where the gap is and what a future check needs to catch.
+
+        **If the attack gets around something TaintTrap says it catches, do not post it here.** Report it privately as described in SECURITY.md.
+
+        This issue is public: replace real secrets, hosts, email addresses and home paths with fake ones.
+  - type: input
+    id: section
+    attributes:
+      label: Which limitation in docs/threat-model.md?
+      placeholder: "e.g. Paraphrased attacks"
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: The example
+      description: The user's task, the content the agent read, and the tool call that went through.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: TaintTrap version and mode
+      placeholder: "0.1.0, soft"

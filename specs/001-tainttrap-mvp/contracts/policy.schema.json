@@ -1,0 +1,399 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://raw.githubusercontent.com/Alexli18/tainttrap/main/src/tainttrap/data/schemas/policy.schema.json",
+ "title": "TaintTrap policy (YAML, v1)",
+ "description": "FR-019..FR-022, FR-026, FR-030. Authoritative validation is the Pydantic model; this schema mirrors it. Semantic rules not expressible here: thresholds.aligned_block < thresholds.aligned_allow; judge.enabled requires judge.provider/endpoint/model; non-loopback judge.endpoint requires judge.allow_remote=true.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "version"
+ ],
+ "$defs": {
+  "outcome": {
+   "enum": [
+    "allow",
+    "ask",
+    "block"
+   ]
+  },
+  "riskClass": {
+   "enum": [
+    "read_only",
+    "write_internal",
+    "external_communication",
+    "destructive",
+    "financial",
+    "credential_access",
+    "unknown"
+   ]
+  },
+  "prob": {
+   "type": "number",
+   "minimum": 0,
+   "maximum": 1
+  },
+  "riskAction": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "aligned_high": {
+     "$ref": "#/$defs/outcome",
+     "description": "aligned >= thresholds.aligned_allow"
+    },
+    "aligned_mid": {
+     "enum": [
+      "allow",
+      "ask",
+      "block",
+      "escalate"
+     ],
+     "description": "aligned in [aligned_block, aligned_allow)"
+    }
+   }
+  }
+ },
+ "properties": {
+  "version": {
+   "const": 1
+  },
+  "mode": {
+   "enum": [
+    "observe",
+    "soft",
+    "strict"
+   ],
+   "default": "observe"
+  },
+  "thresholds": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "aligned_block": {
+     "$ref": "#/$defs/prob",
+     "default": 0.2
+    },
+    "aligned_allow": {
+     "$ref": "#/$defs/prob",
+     "default": 0.8
+    },
+    "sensitive_block": {
+     "$ref": "#/$defs/prob",
+     "default": 0.9
+    },
+    "needs_human_ask": {
+     "$ref": "#/$defs/prob",
+     "default": 0.7
+    }
+   }
+  },
+  "risk_actions": {
+   "type": "object",
+   "propertyNames": {
+    "$ref": "#/$defs/riskClass"
+   },
+   "additionalProperties": {
+    "$ref": "#/$defs/riskAction"
+   },
+   "default": {
+    "read_only": {
+     "aligned_high": "allow",
+     "aligned_mid": "allow"
+    },
+    "write_internal": {
+     "aligned_high": "allow",
+     "aligned_mid": "escalate"
+    },
+    "external_communication": {
+     "aligned_high": "allow",
+     "aligned_mid": "escalate"
+    },
+    "destructive": {
+     "aligned_high": "ask",
+     "aligned_mid": "escalate"
+    },
+    "financial": {
+     "aligned_high": "ask",
+     "aligned_mid": "block"
+    },
+    "credential_access": {
+     "aligned_high": "ask",
+     "aligned_mid": "block"
+    },
+    "unknown": {
+     "aligned_high": "ask",
+     "aligned_mid": "escalate"
+    }
+   }
+  },
+  "rules": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "secrets": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "enabled": {
+       "type": "boolean",
+       "default": true
+      },
+      "high_confidence_action": {
+       "$ref": "#/$defs/outcome",
+       "default": "block",
+       "description": "Applied when a high-confidence secret goes to external_communication or an untrusted destination"
+      },
+      "medium_confidence_action": {
+       "$ref": "#/$defs/outcome",
+       "default": "ask"
+      },
+      "disabled_rules": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      }
+     }
+    },
+    "domains": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "allow": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      },
+      "deny": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       }
+      }
+     }
+    },
+    "commands": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "allow": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "format": "regex"
+       }
+      },
+      "deny": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "format": "regex"
+       }
+      },
+      "use_builtin_deny": {
+       "type": "boolean",
+       "default": true
+      }
+     }
+    },
+    "untrusted_recipient_external": {
+     "$ref": "#/$defs/outcome",
+     "default": "block",
+     "description": "PRD policy example: untrusted recipient + external_communication"
+    }
+   }
+  },
+  "budgets": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "per_session": {
+     "type": "object",
+     "propertyNames": {
+      "$ref": "#/$defs/riskClass"
+     },
+     "additionalProperties": {
+      "type": "integer",
+      "minimum": 0
+     }
+    },
+    "max_money_per_session": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "amount",
+      "currency"
+     ],
+     "properties": {
+      "amount": {
+       "type": "number",
+       "minimum": 0
+      },
+      "currency": {
+       "type": "string",
+       "pattern": "^[A-Z]{3}$"
+      }
+     }
+    },
+    "exceeded_action": {
+     "enum": [
+      "ask",
+      "block"
+     ],
+     "default": "ask"
+    }
+   }
+  },
+  "failure_mode": {
+   "enum": [
+    "fail_open",
+    "fail_closed"
+   ],
+   "default": "fail_open"
+  },
+  "fail_closed_action": {
+   "enum": [
+    "ask",
+    "block"
+   ],
+   "default": "ask"
+  },
+  "model": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "timeout_ms": {
+     "type": "integer",
+     "minimum": 50,
+     "default": 2000
+    },
+    "tier": {
+     "enum": [
+      "auto",
+      "cpu-int8",
+      "gpu-fp16",
+      "trt-fp16"
+     ],
+     "default": "auto"
+    },
+    "enabled": {
+     "type": "boolean",
+     "default": true,
+     "description": "false = rules + judge only (PRD week-4 fallback)"
+    }
+   }
+  },
+  "judge": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "enabled": {
+     "type": "boolean",
+     "default": false
+    },
+    "provider": {
+     "enum": [
+      "openai_compatible",
+      "anthropic"
+     ]
+    },
+    "endpoint": {
+     "type": "string",
+     "format": "uri"
+    },
+    "model": {
+     "type": "string"
+    },
+    "api_key_env": {
+     "type": "string"
+    },
+    "allow_remote": {
+     "type": "boolean",
+     "default": false
+    },
+    "timeout_ms": {
+     "type": "integer",
+     "minimum": 500,
+     "default": 15000
+    }
+   }
+  },
+  "human": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "timeout_s": {
+     "type": "integer",
+     "minimum": 5,
+     "maximum": 3600,
+     "default": 60
+    },
+    "channel": {
+     "const": "terminal",
+     "default": "terminal"
+    }
+   }
+  },
+  "provenance": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "min_fragment_len": {
+     "type": "integer",
+     "minimum": 12,
+     "maximum": 64,
+     "default": 24
+    },
+    "min_entity_len": {
+     "type": "integer",
+     "minimum": 4,
+     "default": 6
+    }
+   }
+  },
+  "hook": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "explicit_allow": {
+     "type": "boolean",
+     "default": false
+    },
+    "approval_channel": {
+     "enum": [
+      "claude_code",
+      "daemon"
+     ],
+     "default": "claude_code",
+     "description": "claude_code: return ask to Claude Code's dialog; daemon: hook waits for a code-confirmed daemon approval"
+    }
+   }
+  },
+  "proxy": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "task_ttl_min": {
+     "type": "integer",
+     "minimum": 1,
+     "default": 30
+    }
+   }
+  },
+  "logging": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "retain_days": {
+     "type": "integer",
+     "minimum": 1,
+     "default": 90
+    }
+   }
+  },
+  "telemetry": {
+   "const": false,
+   "default": false
+  }
+ }
+}

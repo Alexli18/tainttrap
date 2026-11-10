@@ -1,0 +1,85 @@
+name: False positive
+description: TaintTrap asked about or blocked something that was normal work.
+title: "[False positive] "
+labels: ["false-positive", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks. False-positive reports are the most useful input this project gets: each one becomes a test case.
+
+        **This issue is public.** Before posting, remove secrets, tokens, private hostnames, real email addresses and home-directory paths from everything below. TaintTrap masks secrets it recognises, but not everything private looks like a secret.
+
+        If TaintTrap *let through* something it should have stopped, do not use this form. Report it privately (see SECURITY.md).
+  - type: dropdown
+    id: decision
+    attributes:
+      label: What did TaintTrap do?
+      options:
+        - Blocked the call
+        - Asked me
+        - Asked, and I approved, but it keeps asking
+    validations:
+      required: true
+  - type: textarea
+    id: task
+    attributes:
+      label: What were you asking the agent to do?
+      description: The task in a sentence or two.
+      placeholder: Set up the project and run the tests.
+    validations:
+      required: true
+  - type: textarea
+    id: call
+    attributes:
+      label: The tool call
+      description: The command or tool call that was stopped, with private values replaced.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: The reason TaintTrap gave
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: dossier
+    attributes:
+      label: Decision record (optional, redacted)
+      description: Output of `tainttrap log show ENTRY_ID` for this decision (find the id with `tainttrap log`). Secrets are masked, but read it before pasting.
+      render: json
+  - type: input
+    id: version
+    attributes:
+      label: TaintTrap version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: integration
+    attributes:
+      label: Integration
+      options:
+        - Claude Code hook
+        - MCP proxy
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      options:
+        - soft
+        - strict
+        - observe (it would have asked or blocked)
+    validations:
+      required: true
+  - type: checkboxes
+    id: redacted
+    attributes:
+      label: Privacy
+      options:
+        - label: I removed secrets, private hosts, email addresses and home paths from this report.
+          required: true

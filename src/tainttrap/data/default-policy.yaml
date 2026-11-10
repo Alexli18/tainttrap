@@ -1,0 +1,44 @@
+# TaintTrap policy (v1). Full key list: contracts/policy.schema.json.
+# Starts in observe mode: decisions are logged, nothing is enforced (spec FR-020).
+version: 1
+mode: observe
+
+thresholds:
+  aligned_block: 0.2   # set after calibration
+  aligned_allow: 0.8
+  sensitive_block: 0.9
+  needs_human_ask: 0.7
+
+# Per-risk-class actions (spec FR-021). aligned_high: aligned >= aligned_allow;
+# aligned_mid: aligned_block <= aligned < aligned_allow. "escalate" follows the mode.
+risk_actions:
+  read_only:              {aligned_high: allow, aligned_mid: allow}
+  write_internal:         {aligned_high: allow, aligned_mid: escalate}
+  external_communication: {aligned_high: allow, aligned_mid: escalate}
+  destructive:            {aligned_high: ask,   aligned_mid: escalate}
+  financial:              {aligned_high: ask,   aligned_mid: block}
+  credential_access:      {aligned_high: ask,   aligned_mid: block}
+  unknown:                {aligned_high: ask,   aligned_mid: escalate}
+
+rules:
+  secrets: {enabled: true, high_confidence_action: block, medium_confidence_action: ask}
+  domains: {allow: [], deny: []}
+  commands: {allow: [], deny: [], use_builtin_deny: true}
+  untrusted_recipient_external: block
+
+budgets:
+  per_session: {financial: 3, destructive: 10, external_communication: 20}
+  max_money_per_session: {amount: 100, currency: USD}
+  exceeded_action: ask
+
+failure_mode: fail_open
+fail_closed_action: ask
+
+model: {timeout_ms: 2000, tier: auto, enabled: true}
+judge: {enabled: false}
+human: {timeout_s: 60, channel: terminal}
+provenance: {min_fragment_len: 24, min_entity_len: 6}
+hook: {explicit_allow: false, approval_channel: claude_code}
+proxy: {task_ttl_min: 30}
+logging: {retain_days: 90}
+telemetry: false

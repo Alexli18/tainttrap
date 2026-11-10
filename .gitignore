@@ -1,0 +1,47 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+/dist/
+/build/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.DS_Store
+*.onnx
+*.safetensors
+eval/reports/*/raw/
+eval/reports/local-agent/
+training/**/out/
+training/data/
+.specify/feature.json
+# reports that quote third-party dataset content stay local
+eval/reports/real-traces-*.json
+
+# test and tool caches
+.hypothesis/
+.coverage
+htmlcov/
+
+# editors
+.idea/
+.vscode/
+
+# local Claude Code settings (the checked-in agents and skills stay)
+.claude/settings.local.json
+
+# secrets and logs; the fake ones in the test fixtures are checked in on purpose
+.env
+.env.*
+*.log
+!tests/fixtures/**/.env
+!tests/fixtures/**/*.log
+
+# model weights in other formats (*.onnx and *.safetensors are above)
+*.gguf
+*.ckpt
+*.pt
+*.pth
+
+# draft reports
+eval/reports/draft-*

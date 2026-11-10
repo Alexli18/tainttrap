@@ -1,0 +1,179 @@
+# Built-in Claude Code tools. Descriptions are ours, never taken from a server (FR-011).
+# Shell overrides are anchored to the start of a command so prose such as
+# `git commit -m "fix email "` does not match.
+x-shell-overrides: &shell
+  - arg: command
+    pattern: '(?:^|[;&|(]\s*|\$\(\s*)(?:sudo\s+)?(?:rm\s+-[a-zA-Z]*[rR][a-zA-Z]*|git\s+push\s+[^;&|]*--force|git\s+reset\s+--hard|mkfs(?:\.\w+)?\s|dd\s+[^;&|]*of=/dev/|shred\s)|DROP\s+(?:TABLE|DATABASE)|TRUNCATE\s+TABLE'
+    risk_class: destructive
+  - arg: command
+    pattern: '(?:^|[;&|(]\s*|\$\(\s*)(?:sudo\s+)?(?:curl|wget|nc|ncat|scp|rsync|ssh|sftp|ftp|sendmail|mail|mailx|telnet)\b'
+    risk_class: external_communication
+  - arg: command
+    pattern: '(?:^|[;&|(]\s*|\$\(\s*)(?:aws\s+iam|gcloud\s+iam|gh\s+auth|ssh-keygen|security\s+find-generic-password|security\s+find-internet-password|gpg\s+--export-secret)'
+    risk_class: credential_access
+
+x-powershell-overrides: &powershell
+  - arg: command
+    pattern: '(?i)(?:^|[;|(]\s*)(?:Remove-Item\b[^;|]*-Recurse|rm\s+-[a-zA-Z]*[rR]|Format-Volume\b|Clear-Disk\b|git\s+push\s+[^;|]*--force|git\s+reset\s+--hard)'
+    risk_class: destructive
+  - arg: command
+    pattern: '(?i)(?:^|[;|(]\s*)(?:Invoke-WebRequest|iwr|Invoke-RestMethod|irm|curl|wget|Send-MailMessage|Start-BitsTransfer|scp|ssh|sftp|ftp)\b'
+    risk_class: external_communication
+  - arg: command
+    pattern: '(?i)(?:^|[;|(]\s*)(?:Get-Credential|ConvertFrom-SecureString|Export-PfxCertificate|cmdkey|gh\s+auth|aws\s+iam|gcloud\s+iam)\b'
+    risk_class: credential_access
+
+tools:
+  - name: Read
+    risk_class: read_only
+    description: Reads a file from the local filesystem.
+  - name: Glob
+    risk_class: read_only
+    description: Lists files matching a glob pattern.
+  - name: Grep
+    risk_class: read_only
+    description: Searches file contents with a regular expression.
+  - name: LS
+    risk_class: read_only
+    description: Lists a directory.
+  - name: WebSearch
+    risk_class: read_only
+    description: Runs a web search and returns result snippets.
+  - name: WebFetch
+    risk_class: read_only
+    description: Fetches a web page (GET) and summarizes it.
+  - name: TodoWrite
+    risk_class: read_only
+    description: Updates the agent's own task list.
+  - name: Write
+    risk_class: write_internal
+    description: Creates or overwrites a local file.
+  - name: Edit
+    risk_class: write_internal
+    description: Edits a local file in place.
+  - name: MultiEdit
+    risk_class: write_internal
+    description: Applies several edits to a local file.
+  - name: NotebookEdit
+    risk_class: write_internal
+    description: Edits a Jupyter notebook cell.
+  - name: Task
+    risk_class: write_internal
+    description: Starts a sub-agent with its own tools.
+  - name: Agent
+    risk_class: write_internal
+    description: Starts a sub-agent with its own tools.
+  - name: Bash
+    risk_class: write_internal
+    description: Runs a shell command on the local machine.
+    arg_risk_overrides: *shell
+  # Tool list from the Claude Code tools reference (code.claude.com/docs/en/tools-reference,
+  # 2026-10-11). Session and task bookkeeping is read_only; anything that publishes, sends or
+  # schedules work in the cloud is external_communication.
+  - name: Monitor
+    risk_class: write_internal
+    description: Runs a command in the background, or watches a WebSocket, and streams its output.
+    arg_risk_overrides: *shell
+  - name: PowerShell
+    risk_class: write_internal
+    description: Runs a PowerShell command on the local machine.
+    arg_risk_overrides: *powershell
+  - name: Skill
+    risk_class: write_internal
+    description: Loads a skill's instructions into the conversation, or runs it in a sub-agent.
+  - name: Workflow
+    risk_class: write_internal
+    description: Runs a script that orchestrates sub-agents in the background.
+  - name: EnterWorktree
+    risk_class: write_internal
+    description: Creates or enters a git worktree and moves the session's working directory there.
+  - name: ExitWorktree
+    risk_class: write_internal
+    description: Leaves a worktree session and returns to the original directory.
+  - name: CronCreate
+    risk_class: write_internal
+    description: Schedules a prompt to run later in this session.
+  - name: CronDelete
+    risk_class: write_internal
+    description: Cancels a prompt scheduled in this session.
+  - name: ScheduleWakeup
+    risk_class: write_internal
+    description: Schedules the next iteration of a self-paced loop in this session.
+  - name: TaskStop
+    risk_class: write_internal
+    description: Stops a background task or background agent of this session.
+  - name: SendFeedback
+    risk_class: write_internal
+    description: Queues a feedback draft on this machine; nothing is sent until the user sends it.
+  - name: Artifact
+    risk_class: external_communication
+    description: Publishes an HTML or Markdown file as a page on claude.ai, which can be shared.
+  - name: PushNotification
+    risk_class: external_communication
+    description: Sends a desktop notification and, with Remote Control, a phone push through a hosted service.
+  - name: SendMessage
+    risk_class: external_communication
+    description: Sends a message to another agent or Claude Code session, possibly on another machine.
+  - name: SendUserFile
+    risk_class: external_communication
+    description: Sends a file from the session to the user's device through a hosted service.
+  - name: RemoteTrigger
+    risk_class: external_communication
+    description: Creates, updates or runs cloud routines on claude.ai.
+  - name: ShareOnboardingGuide
+    risk_class: external_communication
+    description: Uploads ONBOARDING.md and returns a share link.
+  - name: AskUserQuestion
+    risk_class: read_only
+    description: Asks the user multiple-choice questions.
+  - name: EnterPlanMode
+    risk_class: read_only
+    description: Switches the session to plan mode.
+  - name: ExitPlanMode
+    risk_class: read_only
+    description: Presents a plan to the user for approval.
+  - name: EndConversation
+    risk_class: read_only
+    description: Ends the session.
+  - name: CronList
+    risk_class: read_only
+    description: Lists prompts scheduled in this session.
+  - name: TaskCreate
+    risk_class: read_only
+    description: Adds an item to the agent's own task list.
+  - name: TaskGet
+    risk_class: read_only
+    description: Reads an item of the agent's own task list.
+  - name: TaskList
+    risk_class: read_only
+    description: Lists the agent's own task list.
+  - name: TaskUpdate
+    risk_class: read_only
+    description: Updates or removes an item of the agent's own task list.
+  - name: TaskOutput
+    risk_class: read_only
+    description: Reads the output of a background task.
+  - name: ListAgents
+    risk_class: read_only
+    description: Lists the agents and sessions the agent can message.
+  - name: SubagentHandback
+    risk_class: read_only
+    description: Returns a sub-agent's final report to its caller.
+  - name: ReportFindings
+    risk_class: read_only
+    description: Reports code-review findings to the user interface.
+  - name: ToolSearch
+    risk_class: read_only
+    description: Loads the definitions of deferred tools.
+  - name: WaitForMcpServers
+    risk_class: read_only
+    description: Waits for MCP servers that are still connecting.
+  - name: LSP
+    risk_class: read_only
+    description: Queries language servers for definitions, references and diagnostics.
+  - name: ListMcpResourcesTool
+    risk_class: read_only
+    description: Lists resources exposed by connected MCP servers.
+  - name: ReadMcpResourceTool
+    risk_class: read_only
+    description: Reads one MCP resource by URI.

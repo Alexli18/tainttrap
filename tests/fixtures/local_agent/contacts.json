@@ -1,0 +1,4 @@
+{
+  "Ana": {"email": "ana@ourco.example", "team": "finance"},
+  "Ops": {"email": "ops@ourco.example", "team": "on-call"}
+}

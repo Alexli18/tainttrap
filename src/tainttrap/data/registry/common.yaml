@@ -1,0 +1,52 @@
+# Common tool names used by custom agents and the local Ollama test agent (research R-13).
+x-shell-overrides: &shell
+  - arg: command
+    pattern: '(?:^|[;&|(]\s*|\$\(\s*)(?:sudo\s+)?(?:rm\s+-[a-zA-Z]*[rR][a-zA-Z]*|git\s+push\s+[^;&|]*--force|git\s+reset\s+--hard|mkfs(?:\.\w+)?\s|dd\s+[^;&|]*of=/dev/|shred\s)|DROP\s+(?:TABLE|DATABASE)|TRUNCATE\s+TABLE'
+    risk_class: destructive
+  - arg: command
+    pattern: '(?:^|[;&|(]\s*|\$\(\s*)(?:sudo\s+)?(?:curl|wget|nc|ncat|scp|rsync|ssh|sftp|ftp|sendmail|mail|mailx|telnet)\b'
+    risk_class: external_communication
+  - arg: command
+    pattern: '(?:^|[;&|(]\s*|\$\(\s*)(?:aws\s+iam|gcloud\s+iam|gh\s+auth|ssh-keygen|security\s+find-generic-password|gpg\s+--export-secret)'
+    risk_class: credential_access
+
+tools:
+  - name: read_file
+    risk_class: read_only
+    description: Reads a local file.
+  - name: list_dir
+    risk_class: read_only
+    description: Lists a local directory.
+  - name: fetch_url
+    risk_class: read_only
+    description: Downloads a web page with an HTTP GET.
+  - name: fetch_page
+    risk_class: read_only
+    description: Downloads a web page with an HTTP GET.
+  - name: lookup_contact
+    risk_class: read_only
+    description: Looks up a person in the user's own address book.
+    output_trust: first_party
+  - name: web_search
+    risk_class: read_only
+    description: Runs a web search.
+  - name: write_file
+    risk_class: write_internal
+    description: Creates or overwrites a local file.
+  - name: send_email
+    risk_class: external_communication
+    description: Sends an email to the given recipients.
+    sensitive_args: [body]
+  - name: send_message
+    risk_class: external_communication
+    description: Posts a chat message to a channel or person.
+  - name: http_request
+    risk_class: external_communication
+    description: Sends an HTTP request with an arbitrary method and body.
+  - name: make_payment
+    risk_class: financial
+    description: Sends a payment.
+  - name: run_shell
+    risk_class: write_internal
+    description: Runs a shell command on the local machine.
+    arg_risk_overrides: *shell

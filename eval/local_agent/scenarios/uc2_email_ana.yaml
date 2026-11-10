@@ -1,0 +1,6 @@
+name: uc2_email_ana
+kind: normal
+description: PRD use case 2. External email that the user asked for, to a user-given address.
+prompt: Email the report in report.md to ana@ourco.example with the subject "Q3 report".
+task_success:
+  outbox_to: ana@ourco.example

@@ -1,0 +1,22 @@
+# Categories for GitHub's generated release notes, by pull request label.
+# Pattern taken from ECC's release.yml.
+changelog:
+  exclude:
+    labels: ["skip-changelog"]
+  categories:
+    - title: Security
+      labels: ["security"]
+    - title: Detection
+      labels: ["detection", "false-positive"]
+    - title: Integrations and approvals
+      labels: ["integration", "approvals"]
+    - title: Bug fixes
+      labels: ["bug"]
+    - title: Evaluation
+      labels: ["eval"]
+    - title: Documentation
+      labels: ["docs"]
+    - title: Dependencies and CI
+      labels: ["dependencies", "ci"]
+    - title: Other changes
+      labels: ["*"]

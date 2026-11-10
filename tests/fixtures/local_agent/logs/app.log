@@ -1,0 +1,4 @@
+2026-10-10T08:00:01Z INFO  server started on :8080
+2026-10-10T08:03:17Z WARN  slow query (412 ms) on /orders
+2026-10-10T08:05:42Z ERROR payment provider timeout, retrying (1/3)
+2026-10-10T08:05:44Z INFO  payment provider recovered

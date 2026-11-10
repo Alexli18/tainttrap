@@ -1,0 +1,4 @@
+# Pinned model artifacts (research R-10). Each entry:
+#   {name, repo, revision: <40-hex commit>, files: {filename: sha256}, tier}
+# Runtime loads only files whose sha256 matches this lock (FR-034).
+models: []

@@ -1,0 +1,98 @@
+[build-system]
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tainttrap"
+version = "0.1.0.dev0"
+description = "Local, fast check of every tool call an AI agent is about to make: allow, ask or block."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "pydantic==2.14.0",
+    "PyYAML==6.0.3",
+    "click==8.5.0",
+    "pyahocorasick==2.3.1",
+]
+
+[project.optional-dependencies]
+cpu = [
+    "onnxruntime==1.31.0",
+    "tokenizers==0.23.3",
+    "numpy==2.5.3; python_version >= '3.12'",
+    "numpy==2.3.5; python_version < '3.12'",
+]
+# Conflicts with [cpu]; on Jetson install onnxruntime-gpu from the Jetson AI Lab index instead.
+gpu = [
+    "onnxruntime-gpu==1.31.0",
+    "tokenizers==0.23.3",
+    "numpy==2.5.3; python_version >= '3.12'",
+    "numpy==2.3.5; python_version < '3.12'",
+]
+http = ["mcp==2.3.0"]
+# Open-data import and the Hugging Face training dataset (training/, eval/real_traces); never needed at runtime.
+data = ["huggingface-hub==2.0.0", "pyarrow==25.0.1"]
+dev = [
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "hypothesis==6.168.5",
+    "jsonschema==4.26.0",
+    "ruff==0.17.0",
+    "mypy==2.4.0",
+    "types-PyYAML==6.0.12.20260906",
+]
+
+[project.scripts]
+tainttrap = "tainttrap.cli.main:cli"
+tainttrap-hook = "tainttrap.hookclient:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tainttrap"]
+
+[tool.uv]
+conflicts = [[{ extra = "cpu" }, { extra = "gpu" }]]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "eval"]
+# The audit's probe scripts are kept byte for byte as written (tests/audit/test_audit_probes.py).
+extend-exclude = ["tests/audit/p*.py", "tests/audit/harness.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S"]
+ignore = ["S101", "S603", "S607", "S311"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106", "S108", "E501"]
+"eval/**" = ["S108"]
+# stop-list entries, not sockets or temp files
+"src/tainttrap/core/provenance.py" = ["S104", "S108"]
+
+[tool.mypy]
+python_version = "3.11"
+mypy_path = "src"
+packages = ["tainttrap.core"]
+strict = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["ahocorasick", "ahocorasick.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+markers = [
+    "slow: performance-sensitive tests",
+    "model: needs an exported ONNX model",
+    "adversarial: level-6 attacks on TaintTrap itself",
+    "ollama: needs a running Ollama with qwen3:4b",
+    "audit: the fail-open audit's probes (tests/audit, ~4 min); always run in CI",
+    "daemon_errors_expected: the test provokes a daemon internal error on purpose",
+]
+# Local default is the fast set. Full set: uv run pytest -m "not model and not ollama".
+# CI passes its own -m without "not audit", so the audit probes always run there.
+addopts = "--strict-markers -m 'not model and not ollama and not audit'"

@@ -1,0 +1,55 @@
+# gitleaks configuration for TaintTrap.
+#
+# TaintTrap's tests deliberately contain secret-shaped values: they are the
+# bait the detection rules must catch. This file keeps the default rules and
+# allowlists only what is documented as fake. Keep every entry narrow: one
+# value, or one fixture directory whose README states that all values are fake.
+# A broad pattern here is how a real key gets published.
+
+title = "TaintTrap"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Documented AWS example credentials used as bait in tests"
+regexes = [
+  '''AKIAIOSFODNN7EXAMPLE''',
+  '''wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY''',
+]
+
+[[allowlists]]
+description = "Secret values explicitly marked fake: the value itself contains EXAMPLE or FAKE (upper case)"
+regexTarget = "secret"
+regexes = [
+  '''EXAMPLE''',
+  '''FAKE''',
+]
+
+# The fixture directories, each with a README saying its values are fake.
+# tests/fixtures/secrets/ holds the realistic-looking bait for the secret rules
+# (loaded by tests/conftest.py). tests/fixtures/local_agent/ is not listed: it
+# uses only documented example keys, and a README there would show up in the
+# local agent's sandbox. Values here are hidden from the normal scan; the
+# release-sanitizer agent re-scans these directories without this allowlist for
+# a person to sign off.
+[[allowlists]]
+description = "Fixture directories that contain only fake secrets"
+paths = [
+  '''^tests/fixtures/secrets/''',
+]
+
+# The vendored secret rules name the gitleaks/betterleaks commits they were
+# generated from (two 40-character hashes in the header comment) and contain the
+# public Bedrock key prefix inside a regex. Both look like tokens to the scanner.
+# Only these three exact strings are hidden, wherever they appear; a real key
+# pasted into the same file is still reported. (A path-scoped entry would hide
+# the whole file, which is why this one has no path.)
+[[allowlists]]
+description = "Vendored rule file: two upstream commit hashes and the public Bedrock key prefix"
+regexTarget = "secret"
+regexes = [
+  '''^b58d3f102cf3a2c84cb7f923d05c25c9b1aed84b$''',
+  '''^43f0ee932d05ef2bd79b2e530994b9c9851127bc$''',
+  '''^bedrock-api-key-YmVkcm9jay5hbWF6b25hd3MuY29t$''',
+]

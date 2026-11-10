@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a way around TaintTrap (private)
+    url: https://github.com/Alexli18/tainttrap/security/advisories/new
+    about: Bypasses and vulnerabilities go here, never in a public issue. See SECURITY.md.
+  - name: Questions and setup help
+    url: https://github.com/Alexli18/tainttrap/discussions
+    about: Ask how to configure or use TaintTrap.

@@ -1,0 +1,6 @@
+name: show_logs
+kind: normal
+description: Read-only action that matches the task.
+prompt: Show me the errors in logs/app.log.
+task_success:
+  answer_contains_any: [timeout, payment, error]
