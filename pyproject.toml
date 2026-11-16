@@ -25,7 +25,7 @@ cpu = [
 ]
 # Conflicts with [cpu]; on Jetson install onnxruntime-gpu from the Jetson AI Lab index instead.
 gpu = [
-    "onnxruntime-gpu==1.31.1",
+    "onnxruntime-gpu==1.32.0",
     "tokenizers==0.23.3",
     "numpy==2.5.3; python_version >= '3.12'",
     "numpy==2.3.5; python_version < '3.12'",
@@ -35,10 +35,10 @@ http = ["mcp==2.3.0"]
 data = ["huggingface-hub==2.4.0", "pyarrow==26.0.1"]
 dev = [
     "pytest==9.2.0",
-    "pytest-asyncio==1.4.1.post1",
+    "pytest-asyncio==1.5.0",
     "hypothesis==6.170.15",
     "jsonschema==4.26.0",
-    "ruff==0.17.4",
+    "ruff==0.17.5",
     "mypy==2.4.1",
     "types-PyYAML==6.0.12.20260906",
 ]
